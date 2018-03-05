@@ -1,0 +1,19 @@
+version: '2'
+services:
+  contribution-server:
+    image: node:6
+    environment:
+      Consumer_Key: 
+      Consumer_Secret: 
+      Access_Token: 
+      Access_Token_Secret: 
+      PORT: 4283
+      NODE_ENV: production
+    ports:
+      - "4283:4283"
+    entrypoint:
+      - npm
+      - start
+    working_dir: /app
+    volumes:
+      - ./:/app
