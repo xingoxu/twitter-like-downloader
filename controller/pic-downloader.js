@@ -6,14 +6,20 @@ let downloadPath = path.resolve(__dirname, '../download');
 
 let httpClient = require('request');
 
-const download = url => new Promise((resolve, reject) => {
-  httpClient('https://pbs.twimg.com/media/DXevx5DUMAAKbqn.jpg:orig').pipe(fs.createWriteStream(`${downloadPath}/DXevx5DUMAAKbqn_${Date.now()}.jpg`)).on('close', resolve).on('error', err => reject({
-    err,
-    url
-  }));
-}).catch(({ err, url }) => {
+let downloading = 0;
+
+const download = (url, filename, dirname) => new Promise((resolve, reject) => {
+  if (!fs.existsSync(`${downloadPath}/${dirname}`))
+    fs.mkdirSync(`${downloadPath}/${dirname}`);
+  downloading++;
+  httpClient(url).pipe(fs.createWriteStream(`${downloadPath}/${dirname}/${filename}`)).on('close', resolve).on('error', reject);
+}).then(() => {
+  downloading--;
+  console.log(downloading);
+}).catch(err => {
   console.error(err);
-  return wait(60 * 1000).then(() => download(url));
+  downloading--;
+  return wait(60 * 1000).then(() => download(url, filename, dirname));
 });
 
 module.exports = {
