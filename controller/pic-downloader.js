@@ -15,7 +15,7 @@ const download = (url, filename, dirname) => new Promise((resolve, reject) => {
   httpClient(url).pipe(fs.createWriteStream(`${downloadPath}/${dirname}/${filename}`)).on('close', resolve).on('error', reject);
 }).then(() => {
   downloading--;
-  console.log(downloading);
+  console.log('downloading: ', downloading);
 }).catch(err => {
   console.error(err);
   downloading--;
