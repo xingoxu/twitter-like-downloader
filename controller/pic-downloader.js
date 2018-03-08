@@ -19,7 +19,8 @@ const download = (url, filename, dirname) => new Promise((resolve, reject) => {
 }).catch(err => {
   console.error(err);
   downloading--;
-  return wait(60 * 1000).then(() => download(url, filename, dirname));
+  console.log(url, filename);
+  return;
 });
 
 module.exports = {

@@ -8,7 +8,8 @@ var bodyParser = require('body-parser');
 var app = express();
 app.get('env') === 'production' || require('./utils/test_env');
 
-require('./controller/twitter-like-fetch');
+// require('./controller/twitter-like-fetch');
+require('./controller/process-list');
 
 app.get('env') === 'production' ? app.disable('x-powered-by') : false;
 // view engine setup

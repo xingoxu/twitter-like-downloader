@@ -116,6 +116,8 @@ function processFavList(likeList) {
       downloadMediaAndRemoveFav(item);
     } else if (item.entities.urls.length == 1 && item.entities.urls[0].expanded_url.includes('odaibako')) {
       downloadMediaAndRemoveFav(item);
+    } else if (item.entities.urls.length == 1 && item.entities.urls[0].expanded_url.includes('reqbox.net')) {
+      downloadMediaAndRemoveFav(item);
     } else if (item.entities.urls.length == 1 && item.entities.urls[0].expanded_url.includes('patreon')) {
       downloadMediaAndRemoveFav(item);
     } else if (item.entities.media.length == 1 &&item.entities.urls.length == 1 && item.entities.urls[0].expanded_url.includes('privatter.net')) {
