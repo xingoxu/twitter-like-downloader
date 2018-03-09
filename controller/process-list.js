@@ -21,8 +21,7 @@ let favProcessed = 0;
 let downloaded = 0;
 
 let favNotAdded = '';
-let favNotProcessed = '';
-
+let favNotReturned = '';
 
 const removeFav = id_str => new Promise((resolve, reject) => {
   httpClient.post({
@@ -48,7 +47,6 @@ const addFav = id_str => new Promise((resolve, reject) => {
     }
   }, (err, res, body) => {
     if (err) {
-      console.error(err);
       return reject(err);
     }
     resolve(body);
@@ -89,7 +87,14 @@ async function getFavList() {
       await processFavList(likeList);
       await wait(5000);
       if (likeList.length < 100) {
-        console.error(processingString.split(','), likeList);
+        let processFavs = processingString.split(',');
+        for (let x = 0; x < processFavs.length; x++) {
+          let findResult = likeList.find(item => item.id_str == processFavs[x]);
+          if (!findResult) {
+            favNotReturned += `${processFavs[x]}\n`;
+            console.error(processFavs[x], 'not processed');
+          }
+        }
       }
       favProcessed += likeList.length;
 
@@ -113,7 +118,7 @@ async function getFavList() {
        console.error(err);
      }
   });
-  fs.writeFile(path.resolve(__dirname, '../download/favNotProcessed.txt'), favNotProcessed, {encoding: 'utf8'}, function (err) {
+  fs.writeFile(path.resolve(__dirname, '../download/favNotReturned.txt'), favNotReturned, {encoding: 'utf8'}, function (err) {
      if (err) {
        console.error(err);
      }
@@ -153,8 +158,6 @@ async function processFavList(likeList) {
       // from here will all has media
       else if (item.entities.urls.length == 1 && item.entities.urls[0].expanded_url.includes('privatter.net')) {
         promise = downloadPrivatterAndRemoveFav(item);
-      } else {
-        favNotProcessed += `${item.id_str}\n`;
       }
     } else if (!item.entities.urls || item.entities.urls.length <= 0) {
       promise = downloadMediaAndRemoveFav(item);
@@ -166,8 +169,6 @@ async function processFavList(likeList) {
       promise = downloadMediaAndRemoveFav(item);
     } else if (item.extended_entities.media.length == 1 && item.entities.urls.length == 1 && item.entities.urls[0].expanded_url.includes('privatter.net')) {
       promise = downloadPrivatterAndRemoveFav(item);
-    } else {
-      favNotProcessed += `${item.id_str}\n`;
     }
     if (promise) {
       tasks.push(promise);
@@ -183,7 +184,7 @@ async function recordAndRemoveFav(item) {
       await removeFav(item.id_str);
     }
   } catch (e) {
-    console.log(e);
+    console.error(e, item.id_str);
     favNotAdded += `${item.id_str}\n`;
   }
 }
@@ -206,7 +207,7 @@ async function downloadMediaAndRemoveFav(item) {
   try {
     await addFav(item.id_str);
   } catch (e) {
-    console.log(e);
+    console.error(e, item.id_str);
     favNotAdded += `${item.id_str}\n`;
   }
 }
@@ -226,11 +227,11 @@ async function downloadPrivatterAndRemoveFav(item) {
   try {
     await addFav(item.id_str);
   } catch (e) {
-    console.log(e);
+    console.error(e, item.id_str);
     favNotAdded += `${item.id_str}\n`;
   }
 }
 
 getFavList().catch(e => {
-  console.log(e);
+  console.error(e);
 })

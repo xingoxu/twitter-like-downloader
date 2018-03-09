@@ -23,14 +23,23 @@ const addFav = id_str => new Promise((resolve, reject) => {
       console.error(err);
       return reject(err);
     }
+    if (res.statusCode === 429) {
+      return reject('Too many request 429');
+    }
     resolve(body);
   });
 });
 
-let promise = `943677533261676546
-942388969001512961
-941127833174269952
-939325998071365632
+let promise = `899655119767191552
+892395624338935808
+889512585980030976
+877787740313604096
+834704945727221760
+823560524050796544
+783267447105204224
+746385440916152320
+635453263542808576
+603203007627407361
 `.split('\n').map(id => {
     id = id.trim();
     if (id == '')

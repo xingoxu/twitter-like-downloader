@@ -12,7 +12,7 @@ const download = (url, filename, dirname) => new Promise((resolve, reject) => {
   if (!fs.existsSync(`${downloadPath}/${dirname}`))
     fs.mkdirSync(`${downloadPath}/${dirname}`);
   downloading++;
-  httpClient(url).pipe(fs.createWriteStream(`${downloadPath}/${dirname}/${filename}`)).on('close', resolve).on('error', reject);
+  httpClient(url).on('error', reject).pipe(fs.createWriteStream(`${downloadPath}/${dirname}/${filename}`)).on('close', resolve).on('error', reject);
 }).then(() => {
   downloading--;
   console.log('downloading: ', downloading);
