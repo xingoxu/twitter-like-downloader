@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "preinstall": "npm install",
+    "prestart": "npm install",
     "start": "node ./bin/www"
   },
   "author": "xingo",

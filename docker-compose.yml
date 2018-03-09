@@ -1,6 +1,6 @@
 version: '2'
 services:
-  contribution-server:
+  twitter-like-downloader:
     image: node:8
     environment:
       Consumer_Key: 
