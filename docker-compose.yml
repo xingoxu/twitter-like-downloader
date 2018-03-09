@@ -7,6 +7,9 @@ services:
       Consumer_Secret: 
       Access_Token: 
       Access_Token_Secret: 
+      privatter_Cookie: 
+      ifttt_Secret: 
+      download_path: ../twitter-like-downloader/
       PORT: 4283
       NODE_ENV: production
     ports:
