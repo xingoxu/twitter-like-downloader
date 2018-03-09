@@ -3,7 +3,6 @@ const path = require('path'),
 const { wait } = require('./wait');
 
 let downloadPath = path.resolve(__dirname, '../', process.env['download_path']);
-console.log(__dirname, downloadPath);
 let httpClient = require('request');
 
 
