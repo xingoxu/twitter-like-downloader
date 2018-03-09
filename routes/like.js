@@ -7,7 +7,8 @@ var router = express.Router();
 
 const { processFav } = require('../controller/processFav');
 
-router.post("/like", function(req, res, next) {
+router.post("/like", function (req, res, next) {
+  let link = req.body.link;
   if (req.body.Secret != process.env['ifttt_Secret'] || !link) {
     return res.status(401).json({ message: 'Permission Denied!' });
   }
