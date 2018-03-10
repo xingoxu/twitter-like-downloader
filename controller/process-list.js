@@ -49,6 +49,9 @@ const addFav = id_str => new Promise((resolve, reject) => {
     if (err) {
       return reject(err);
     }
+    if (res.statusCode === 429) {
+      return reject('Too many request 429');
+    }
     resolve(body);
   });
 });
@@ -168,7 +171,11 @@ async function processFavList(likeList) {
     } else if (item.entities.urls.length == 1 && item.entities.urls[0].expanded_url.includes('patreon')) {
       promise = downloadMediaAndRemoveFav(item);
     } else if (item.extended_entities.media.length == 1 && item.entities.urls.length == 1 && item.entities.urls[0].expanded_url.includes('privatter.net')) {
-      promise = downloadPrivatterAndRemoveFav(item);
+      promise = downloadPrivatterAndRemoveFav(item).catch(err => {
+        // report to line
+        console.error(item, item.entities.urls[0].expanded_url, err);
+        return downloadMedia(item);
+      });
     }
     if (promise) {
       tasks.push(promise);

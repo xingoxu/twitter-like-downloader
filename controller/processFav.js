@@ -146,7 +146,11 @@ async function processTwitterItem(item) {
     item.entities.urls.length == 1 &&
     item.entities.urls[0].expanded_url.includes("privatter.net")
   ) {
-    await downloadPrivatter(item);
+    await downloadPrivatter(item).catch(err => {
+      // report to line
+      console.error(item, item.entities.urls[0].expanded_url, err);
+      return downloadMedia(item);
+    });
   } else {
     // do not know how to do, ask user
     console.log(item);

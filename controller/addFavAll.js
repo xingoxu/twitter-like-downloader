@@ -30,23 +30,23 @@ const addFav = id_str => new Promise((resolve, reject) => {
   });
 });
 
-let promise = `899655119767191552
-892395624338935808
-889512585980030976
-877787740313604096
-834704945727221760
-823560524050796544
-783267447105204224
-746385440916152320
-635453263542808576
-603203007627407361
-`.split('\n').map(id => {
-    id = id.trim();
-    if (id == '')
-      return Promise.resolve();
-    return addFav(id);
-  });
+let favIdsString = fs.readFileSync(path.resolve(__dirname, '../download/favIds.txt'), { encoding: 'utf8' });
+let favNotAdded = '';
 
-Promise.all(promise).then(_ => {
-  console.log('success');
+let promises = favIdsString.split('\n').map(id => {
+  id = id.trim();
+  if (id == '')
+    return Promise.resolve();
+  return addFav(id).catch(err => {
+    favNotAdded += `${id}\n`;
+  });
+});
+
+Promise.all(promises).then(_ => {
+  console.log('completed');
+  fs.writeFile(path.resolve(__dirname, '../download/favNotAdded.txt'), favNotAdded, {encoding: 'utf8'}, function (err) {
+     if (err) {
+       console.error(err);
+     }
+  });
 });
