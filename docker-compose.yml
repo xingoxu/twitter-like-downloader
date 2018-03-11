@@ -10,6 +10,9 @@ services:
       privatter_Cookie: 
       ifttt_Secret: 
       download_path: ../twitter-like-downloader/
+      retweet_text: 
+      LINE_AccessToken:
+      LINE_UserId:
       PORT: 4283
       NODE_ENV: production
     ports:

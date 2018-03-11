@@ -6,6 +6,8 @@ var express = require("express");
 var router = express.Router();
 
 const { processFav, deleteTweet, addFav, getTweet } = require('../controller/processFav');
+const { sendTextMessage } = require('../controller/LINE_Message');
+const errorHandler = e => sendTextMessage(e.stack || ((typeof e === 'string' ? e : JSON.stringify(e))).substring(0, 1999)).catch(line_err => console.error(line_err, e));
 
 router.post("/like", function (req, res, next) {
   let link = req.body.link;
@@ -15,10 +17,10 @@ router.post("/like", function (req, res, next) {
   let linkArray = link.split('/');
   let id_str = linkArray[linkArray.length - 1];
   if (id_str && id_str != '') {
-    processFav(id_str).catch(e => console.error(e));
+    processFav(id_str).catch(errorHandler);
     res.json({ title: "Success!" });
   } else {
-    console.error(req.body);
+    errorHandler(`No id_str in ${JSON.stringify(req.body)}`);
     return res.status(400).json({ message: 'id_str error occured.' });
   }
 });
@@ -32,6 +34,7 @@ router.post("/retweet", function (req, res, next) {
   let id_str = linkArray[linkArray.length - 1];
   if (id_str && id_str != '') {
     res.json({ title: "Success!" });
+
     getTweet(id_str).then(quoteTweet => ({
       validate_text: quoteTweet.full_text,
       validate_text_range: quoteTweet.display_text_range,
@@ -50,12 +53,11 @@ router.post("/retweet", function (req, res, next) {
       }
       if (validate_text.slice(...validate_text_range) == process.env['retweet_text']) {
         let original_id_str = body.original_id_str;
-        console.log(original_id_str);
-        return processFav(body.id_str).then(() => Promise.all([deleteTweet(original_id_str), addFav(body.id_str)])).catch(e => console.error(e));
+        return processFav(body.id_str).then(() => Promise.all([deleteTweet(original_id_str), addFav(body.id_str)]));
       }
-    }).catch(e => console.error(e));
+    }).catch(errorHandler);
   } else {
-    console.error(req.body);
+    errorHandler(`No id_str in ${JSON.stringify(req.body)}`);
     return res.status(400).json({ message: 'id_str error occured.' });
   }
 });

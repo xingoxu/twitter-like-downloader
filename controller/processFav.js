@@ -1,7 +1,7 @@
 const httpClient = require('request');
 const fs = require('fs');
 const path = require('path');
-const { wait } = require('./wait');
+const { sendTextMessage } = require('../controller/LINE_Message');
 
 const getOauthObj = () => ({
   consumer_key: process.env['Consumer_Key'],
@@ -83,8 +83,7 @@ let sendRequest = (id) => new Promise((resolve, reject) => {
       return reject(err);
     }
     if (response.statusCode != 200) {
-      console.error(response.statusMessage);
-      return reject(err);
+      return reject(response.statusMessage);
     }
     resolve(obj);
   });
@@ -92,10 +91,14 @@ let sendRequest = (id) => new Promise((resolve, reject) => {
 
 
 
-async function processFav(id) {
-  let item;
-  item = await sendRequest(id);
-  await processTwitterItem(item);
+function processFav(id) {
+  return sendRequest(id).catch(e => Promise.reject({
+    err: e,
+    url: `https://twitter.com/i/status/972530199135858690`
+  })).then(item => processTwitterItem(item).catch(e => Promise.reject({
+    err: e,
+    url: `https://twitter.com/${item.user.screen_name}/status/${item.id_str}`
+  })));
 }
 
 async function processTwitterItem(item) {
@@ -142,7 +145,7 @@ async function processTwitterItem(item) {
       await downloadPrivatter(item);
     } else {
       // do not know how to do, ask user
-      console.log(item);
+      sendTextMessage(`Nothing can do.\n\n${item.entities.urls[0].expanded_url}\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
     }
   // from here will all has media
   } else if (!item.entities.urls || item.entities.urls.length <= 0) {
@@ -169,12 +172,12 @@ async function processTwitterItem(item) {
   ) {
     await downloadPrivatter(item).catch(err => {
       // report to line
-      console.error(item, item.entities.urls[0].expanded_url, err);
+      sendTextMessage(`${err}\n\n${item.entities.urls[0].expanded_url}\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
       return downloadMedia(item);
     });
   } else {
     // do not know how to do, ask user
-    console.log(item);
+    sendTextMessage(`Nothing can do.\n\n${item.entities.urls[0].expanded_url}\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
   }
 }
 
