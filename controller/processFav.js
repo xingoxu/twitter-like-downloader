@@ -25,8 +25,10 @@ const removeFav = id_str => new Promise((resolve, reject) => {
     }
   }, (err, res, body) => {
     if (err) {
-      console.error(err);
       return reject(err);
+    }
+    if (res.statusCode === 429) {
+      return reject('Too many request 429');
     }
     resolve(body);
   });
@@ -41,6 +43,25 @@ const addFav = id_str => new Promise((resolve, reject) => {
   }, (err, res, body) => {
     if (err) {
       return reject(err);
+    }
+    if (res.statusCode === 429) {
+      return reject('Too many request 429');
+    }
+    resolve(body);
+  });
+});
+
+const deleteTweet = id_str => new Promise((resolve, reject) => {
+  httpClient.post({
+    url: `https://api.twitter.com/1.1/statuses/destroy/${id_str}.json`,
+    oauth: getOauthObj(),
+    form: {}
+  }, (err, res, body) => {
+    if (err) {
+      return reject(err);
+    }
+    if (res.statusCode === 429) {
+      return reject('Too many request 429');
     }
     resolve(body);
   });
@@ -179,5 +200,8 @@ async function downloadPrivatter(item) {
 }
 
 module.exports = {
-  processFav
+  processFav,
+  deleteTweet,
+  addFav,
+  getTweet: sendRequest
 }

@@ -136,6 +136,9 @@ async function processFavList(likeList) {
   for (let i = 0; i < likeList.length; i++){
     let item = likeList[i];
     let promise;
+    // promise = recordAndRemoveFav(item);
+    // tasks.push(promise);
+    // continue;
     if (
       !((item.entities.urls && item.entities.urls.length > 0) || (item.entities.media && item.entities.media.length > 0))
     ) {
@@ -184,7 +187,7 @@ async function processFavList(likeList) {
 }
 
 async function recordAndRemoveFav(item) {
-  console.log(item.full_text, item.id_str);
+  // console.log(item.full_text, item.id_str);
   try {
     await addFav(item.id_str);
     if (['ghosrt', 'chengr28', 'hara_1008', 'ilools', 'chenshaoju'].includes(item.user.screen_name)) {

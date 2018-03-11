@@ -9,7 +9,7 @@ var app = express();
 app.get('env') === 'production' || require('./utils/test_env');
 
 // require('./controller/twitter-like-fetch');
-// require('./controller/process-list');
+require('./controller/process-list');
 // require('./controller/addFavAll');
 
 app.get('env') === 'production' ? app.disable('x-powered-by') : false;
@@ -23,7 +23,7 @@ app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', require('./routes/index'));
-app.use('/twitter', require('./routes/like'));
+app.use('/twitter', require('./routes/twitter'));
 // app.use('/github', require('./routes/github'));
 // app.use('/bangumi', require('./routes/bangumi'));
 
