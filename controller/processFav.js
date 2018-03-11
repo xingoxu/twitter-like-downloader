@@ -145,7 +145,7 @@ async function processTwitterItem(item) {
       await downloadPrivatter(item);
     } else {
       // do not know how to do, ask user
-      sendTextMessage(`Nothing can do.\n\n${item.entities.urls[0].expanded_url}\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
+      sendTextMessage(`Nothing can do.\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
     }
   // from here will all has media
   } else if (!item.entities.urls || item.entities.urls.length <= 0) {
@@ -177,7 +177,7 @@ async function processTwitterItem(item) {
     });
   } else {
     // do not know how to do, ask user
-    sendTextMessage(`Nothing can do.\n\n${item.entities.urls[0].expanded_url}\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
+    sendTextMessage(`Nothing can do.\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
   }
 }
 
