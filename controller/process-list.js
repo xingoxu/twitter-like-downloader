@@ -136,9 +136,9 @@ async function processFavList(likeList) {
   for (let i = 0; i < likeList.length; i++){
     let item = likeList[i];
     let promise;
-    // promise = recordAndRemoveFav(item);
-    // tasks.push(promise);
-    // continue;
+    promise = recordAndRemoveFav(item);
+    tasks.push(promise);
+    continue;
     if (
       !((item.entities.urls && item.entities.urls.length > 0) || (item.entities.media && item.entities.media.length > 0))
     ) {

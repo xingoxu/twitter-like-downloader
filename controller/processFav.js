@@ -69,6 +69,7 @@ const deleteTweet = id_str => new Promise((resolve, reject) => {
 
 const { download } = require('./pic-downloader');
 const { getPrivatterImgUrls } = require('./privatter-fetch');
+const { getMosaicUrls } = require('./mosaic-neriko-fetch');
 
 
 let sendRequest = (id) => new Promise((resolve, reject) => {
@@ -94,7 +95,7 @@ let sendRequest = (id) => new Promise((resolve, reject) => {
 function processFav(id) {
   return sendRequest(id).catch(e => Promise.reject({
     err: e,
-    url: `https://twitter.com/i/status/972530199135858690`
+    url: `https://twitter.com/i/status/${id}`
   })).then(item => processTwitterItem(item).catch(e => Promise.reject({
     err: e,
     url: `https://twitter.com/${item.user.screen_name}/status/${item.id_str}`
@@ -143,6 +144,11 @@ async function processTwitterItem(item) {
     ) {
       // from here will all has media
       await downloadPrivatter(item);
+    } else if (
+      item.entities.urls.length == 1 &&
+      item.entities.urls[0].expanded_url.includes('mosaic.neriko.net')
+    ) {
+      await downloadMosaic(item);
     } else {
       // do not know how to do, ask user
       sendTextMessage(`Nothing can do.\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
@@ -166,6 +172,11 @@ async function processTwitterItem(item) {
   ) {
     await downloadMedia(item);
   } else if (
+    item.entities.urls.length == 1 &&
+    item.entities.urls[0].expanded_url.includes("mosaic.neriko.net")
+  ) {
+    await downloadMosaic(item);
+  } else if (
     item.extended_entities.media.length == 1 &&
     item.entities.urls.length == 1 &&
     item.entities.urls[0].expanded_url.includes("privatter.net")
@@ -179,6 +190,7 @@ async function processTwitterItem(item) {
     // do not know how to do, ask user
     sendTextMessage(`Nothing can do.\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
   }
+  return item;
 }
 
 async function downloadMedia(item) {
@@ -195,6 +207,15 @@ async function downloadMedia(item) {
 
 async function downloadPrivatter(item) {
   await getPrivatterImgUrls(item.entities.urls[0].expanded_url).then(urls => Promise.all(urls.map(url => {
+    let fileArray = url.split('/');
+    let fileName = fileArray[fileArray.length - 1];
+    let fileNameArray = fileName.split('.');
+    return download(url, `${fileNameArray[0]}_${item.id_str}.${fileNameArray[1]}`, item.user.screen_name);
+  })));
+}
+
+async function downloadMosaic(item) {
+  await getMosaicUrls(item.entities.urls[0].expanded_url).then(urls => Promise.all(urls.map(url => {
     let fileArray = url.split('/');
     let fileName = fileArray[fileArray.length - 1];
     let fileNameArray = fileName.split('.');

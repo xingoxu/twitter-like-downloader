@@ -35,7 +35,10 @@ router.post("/retweet", function (req, res, next) {
   if (id_str && id_str != '') {
     res.json({ title: "Success!" });
 
-    getTweet(id_str).then(quoteTweet => ({
+    getTweet(id_str).catch(e => Promise.reject({
+      err: e,
+      url: `https://twitter.com/i/status/${id_str}`
+    })).then(quoteTweet => ({
       validate_text: quoteTweet.full_text,
       validate_text_range: quoteTweet.display_text_range,
       original_id_str: quoteTweet.id_str,
@@ -53,7 +56,10 @@ router.post("/retweet", function (req, res, next) {
       }
       if (validate_text.slice(...validate_text_range) == process.env['retweet_text']) {
         let original_id_str = body.original_id_str;
-        return processFav(body.id_str).then(() => Promise.all([deleteTweet(original_id_str), addFav(body.id_str)]));
+        return processFav(body.id_str).then(item => Promise.all([deleteTweet(original_id_str), addFav(body.id_str)]).catch(err => Promise.reject({
+          err,
+          url: `https://twitter.com/${item.user.screen_name}/status/${item.id_str}`
+        })));
       }
     }).catch(errorHandler);
   } else {
