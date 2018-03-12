@@ -15,7 +15,7 @@ const errorHandler = e => sendTextMessage(e.stack || ((typeof e === 'string' ? e
 // verfiy line post
 router.post("/", verifyLineRequest, function (req, res, next) {
   res.json({ message: 'ok' });
-  req.body.events.forEach(event => {
+  JSON.parse(req.body).events.forEach(event => {
     if (event.type !== 'postback') {
       return;
     }

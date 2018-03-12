@@ -17,14 +17,16 @@ app.get('env') === 'production' ? app.disable('x-powered-by') : false;
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'ejs');
 app.get('env') !== 'production' ? (app.use(logger('dev'))) : false;
+
+app.use(cookieParser());
+app.use('/line', bodyParser.text({ type: '*/*' }), require('./routes/line'));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
-app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', require('./routes/index'));
 app.use('/twitter', require('./routes/twitter'));
-app.use('/line', require('./routes/line'));
 // app.use('/github', require('./routes/github'));
 // app.use('/bangumi', require('./routes/bangumi'));
 
