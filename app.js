@@ -24,6 +24,7 @@ app.use(cookieParser());
 
 app.use('/', require('./routes/index'));
 app.use('/twitter', require('./routes/twitter'));
+app.use('/line', require('./routes/line'));
 // app.use('/github', require('./routes/github'));
 // app.use('/bangumi', require('./routes/bangumi'));
 
