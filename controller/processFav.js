@@ -1,7 +1,8 @@
 const httpClient = require('request');
 const fs = require('fs');
 const path = require('path');
-const { sendTextMessage } = require('../controller/LINE_Message');
+const { sendTextMessage, sendButtonMessage } = require('../controller/LINE_Message');
+const qs = require('qs');
 
 const getOauthObj = () => ({
   consumer_key: process.env['Consumer_Key'],
@@ -9,12 +10,6 @@ const getOauthObj = () => ({
   token: process.env['Access_Token'],
   token_secret: process.env['Access_Token_Secret']
 });
-
-let url = "https://api.twitter.com/1.1/statuses/show.json",
-  qs = {
-    tweet_mode: 'extended',
-    include_entities: true
-  };
 
 const removeFav = id_str => new Promise((resolve, reject) => {
   httpClient.post({
@@ -71,13 +66,15 @@ const { download } = require('./pic-downloader');
 const { getPrivatterImgUrls } = require('./privatter-fetch');
 const { getMosaicUrls } = require('./mosaic-neriko-fetch');
 
-
 let sendRequest = (id) => new Promise((resolve, reject) => {
-  qs.id = id;
   httpClient.get({
-    url,
+    url: 'https://api.twitter.com/1.1/statuses/show.json',
     oauth: getOauthObj(),
-    qs,
+    qs: {
+      id,
+      tweet_mode: 'extended',
+      include_entities: true
+    },
     json: true
   }, (err, response, obj) => {
     if (err) {
@@ -91,13 +88,12 @@ let sendRequest = (id) => new Promise((resolve, reject) => {
 });
 
 
-
 function processFav(id) {
   return sendRequest(id).catch(e => Promise.reject({
-    err: e,
+    err: e.stack || e,
     url: `https://twitter.com/i/status/${id}`
   })).then(item => processTwitterItem(item).catch(e => Promise.reject({
-    err: e,
+    err: e.stack || e,
     url: `https://twitter.com/${item.user.screen_name}/status/${item.id_str}`
   })));
 }
@@ -149,6 +145,8 @@ async function processTwitterItem(item) {
       item.entities.urls[0].expanded_url.includes('mosaic.neriko.net')
     ) {
       await downloadMosaic(item);
+    } else if (item.entities.urls.every(url => url.expanded_url.includes('privatter.net'))) {
+      downloadPrivatterAll(item);
     } else {
       // do not know how to do, ask user
       sendTextMessage(`Nothing can do.\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
@@ -186,9 +184,38 @@ async function processTwitterItem(item) {
       sendTextMessage(`${err}\n\n${item.entities.urls[0].expanded_url}\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
       return downloadMedia(item);
     });
+  } else if (item.entities.urls.every(url => url.expanded_url.includes('privatter.net'))) {
+    sendButtonMessage({
+      img: `${item.entities.media[0].media_url_https}:small`,
+      url: `https://twitter.com/${item.user.screen_name}/status/${item.id_str}`,
+      title: item.user.name,
+      text: item.full_text,
+      actions: [{
+        label: 'Download Privatter',
+        data: qs.stringify({
+          type: 'privatter',
+          item: getSimpleItem(item)
+        })
+      }, {
+        label: 'Download Picture',
+        data: qs.stringify({ type: 'picture', id_str: item.id_str })
+      }, {
+        label: 'Download All',
+        data: qs.stringify({ type: 'all', url_type: 'privatter', id_str: item.id_str })
+      }],
+    });
   } else {
     // do not know how to do, ask user
-    sendTextMessage(`Nothing can do.\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
+    sendButtonMessage({
+      img: `${item.entities.media[0].media_url_https}:small`,
+      url: `https://twitter.com/${item.user.screen_name}/status/${item.id_str}`,
+      title: item.user.name,
+      text: item.full_text,
+      actions: [{
+        label: 'Download Picture',
+        data: qs.stringify({ type: 'picture', id_str: item.id_str })
+      }],
+    });
   }
   return item;
 }
@@ -206,12 +233,20 @@ async function downloadMedia(item) {
 }
 
 async function downloadPrivatter(item) {
-  await getPrivatterImgUrls(item.entities.urls[0].expanded_url).then(urls => Promise.all(urls.map(url => {
+  await downloadPrivatterURL(item.entities.urls[0].expanded_url, item.id_str, item.user.screen_name);
+}
+
+async function downloadPrivatterURL(url, id_str, screen_name) {
+  await getPrivatterImgUrls(url).then(urls => Promise.all(urls.map(url => {
     let fileArray = url.split('/');
     let fileName = fileArray[fileArray.length - 1];
     let fileNameArray = fileName.split('.');
-    return download(url, `${fileNameArray[0]}_${item.id_str}.${fileNameArray[1]}`, item.user.screen_name);
+    return download(url, `${fileNameArray[0]}_${id_str}.${fileNameArray[1]}`, screen_name);
   })));
+}
+
+async function downloadPrivatterAll(item) {
+  await Promise.all(item.entities.urls.map(url => downloadPrivatterURL(url.expanded_url, item.id_str, item.user.screen_name)));
 }
 
 async function downloadMosaic(item) {
@@ -223,9 +258,33 @@ async function downloadMosaic(item) {
   })));
 }
 
+function processLINECallback(data) {
+  return sendRequest(data.id_str).catch(e => Promise.reject({
+    err: e.stack || e,
+    url: `https://twitter.com/i/status/${id}`
+  })).then(item => processLINECallbackTwitterItem(data, item).catch(e => Promise.reject({
+    err: e.stack || e,
+    url: `https://twitter.com/${item.user.screen_name}/status/${item.id_str}`
+  })));
+}
+
+async function processLINECallbackTwitterItem(data, item) {
+  if (data.type == 'privatter') {
+    await downloadPrivatterAll(item);
+  } else if (data.type == 'picture') {
+    await downloadMedia(item);
+  } else if (data.type == 'all') {
+    if (data.url_type == 'privatter') {
+      await Promise.all([downloadPrivatterAll(item), downloadMedia(item)]);
+    }
+  }
+  return item;
+}
+
 module.exports = {
   processFav,
   deleteTweet,
   addFav,
-  getTweet: sendRequest
+  getTweet: sendRequest,
+  processLINECallback
 }

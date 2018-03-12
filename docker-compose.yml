@@ -11,6 +11,7 @@ services:
       ifttt_Secret: 
       download_path: ../twitter-like-downloader/
       retweet_text: 
+      LINE_ChannelSecret:
       LINE_AccessToken:
       LINE_UserId:
       PORT: 4283
