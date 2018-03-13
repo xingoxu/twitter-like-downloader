@@ -1,7 +1,9 @@
 const { sendTextMessage, sendReplyTextMessage } = require('./LINE_Message');
+const { processFav } = require('./processFav');
 const errorHandler = require('./errorHandler');
 
-const processLINEMessage = (message) => {
+const processLINEMessage = (event) => {
+  let message = event.message;
   if (message.type != 'text') {
     return;
   }
@@ -22,7 +24,9 @@ const processLINEMessage = (message) => {
   Promise.all(
     ids.map(id => processFav(id).catch(errorHandler))
   ).then(
-    items => sendTextMessage(`任務成功完了。${items.map(item => `\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`).join('')}`)
+    items => sendTextMessage(`任務成功完了。${items.map(
+      item => item.id_str ? `\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}` : ''
+    ).join('')}`)
   );
 }
 

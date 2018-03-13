@@ -17,7 +17,7 @@ router.post("/", verifyLineRequest, function (req, res, next) {
   res.json({ message: 'ok' });
   JSON.parse(req.body).events.forEach(event => {
     // validate the user who trigger the event
-    if (event.source.type == 'user' && event.source.userId == process.env['LINE_UserId']) {
+    if (!(event.source.type == 'user' && event.source.userId == process.env['LINE_UserId'])) {
       return;
     }
     if (event.type === 'postback') {
@@ -27,7 +27,8 @@ router.post("/", verifyLineRequest, function (req, res, next) {
       processLINECallback(data).then(item => sendTextMessage(`任務成功完了。\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`)).catch(errorHandler);
 
     } else if (event.type === 'message') {
-      require('../controller/process-LINE-message')(event.message);
+      console.log(event);
+      require('../controller/process-LINE-message')(event);
     }
 
   })
