@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 
 const { processFav, deleteTweet, addFav, getTweet } = require('../controller/processFav');
 const { sendTextMessage } = require('../controller/LINE_Message');
-const errorHandler = e => sendTextMessage(e.stack || ((typeof e === 'string' ? e : JSON.stringify(e))).substring(0, 1999)).catch(line_err => console.error(line_err, e));
+const errorHandler = require('../controller/errorHandler');
 
 
 // process like

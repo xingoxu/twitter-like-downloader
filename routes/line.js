@@ -10,19 +10,25 @@ const { sendTextMessage, sendReplyTextMessage } = require('../controller/LINE_Me
 const { verifyLineRequest } = require('../controller/verifyRequest');
 const qs = require('qs');
 
-const errorHandler = e => sendTextMessage(e.stack || ((typeof e === 'string' ? e : JSON.stringify(e))).substring(0, 1999)).catch(line_err => console.error(line_err, e));
+const errorHandler = require('../controller/errorHandler');
 
 // verfiy line post
 router.post("/", verifyLineRequest, function (req, res, next) {
   res.json({ message: 'ok' });
   JSON.parse(req.body).events.forEach(event => {
-    if (event.type !== 'postback') {
+    // validate the user who trigger the event
+    if (event.source.type == 'user' && event.source.userId == process.env['LINE_UserId']) {
       return;
     }
-    let data = qs.parse(event.postback.data);
-    sendReplyTextMessage(event.replyToken, `リクエスト受けました、任務を始めます。\nhttps://twitter.com/i/status/${data.id_str}`).catch(errorHandler);
+    if (event.type === 'postback') {
+      let data = qs.parse(event.postback.data);
+      sendReplyTextMessage(event.replyToken, `リクエスト受けました、任務を始めます。\nhttps://twitter.com/i/status/${data.id_str}`).catch(errorHandler);
 
-    processLINECallback(data).then(item => sendTextMessage(`任務成功完了。\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`)).catch(errorHandler);
+      processLINECallback(data).then(item => sendTextMessage(`任務成功完了。\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`)).catch(errorHandler);
+
+    } else if (event.type === 'message') {
+      require('../controller/process-LINE-message')(event.message);
+    }
 
   })
 });
