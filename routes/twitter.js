@@ -76,6 +76,7 @@ router.post("/retweet", function (req, res, next) {
 const crypto = require('crypto');
 router.get('/account_activity', (req, res, next) => {
   let crc_token = req.query.crc_token;
+  console.log(req);
   if (!crc_token) {
     return next();
   }
