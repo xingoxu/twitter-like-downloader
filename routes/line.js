@@ -7,7 +7,7 @@ var router = express.Router();
 
 const { processFav, deleteTweet, addFav, getTweet, processLINECallback } = require('../controller/processFav');
 const { sendTextMessage, sendReplyTextMessage } = require('../controller/LINE_Message');
-const verifyLineRequest = require('../controller/verifyLineRequest');
+const { verifyLineRequest } = require('../controller/verifyRequest');
 const qs = require('qs');
 
 const errorHandler = e => sendTextMessage(e.stack || ((typeof e === 'string' ? e : JSON.stringify(e))).substring(0, 1999)).catch(line_err => console.error(line_err, e));

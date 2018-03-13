@@ -76,7 +76,6 @@ router.post("/retweet", function (req, res, next) {
 const crypto = require('crypto');
 router.get('/account_activity', (req, res, next) => {
   let crc_token = req.query.crc_token;
-  console.log('test');
   if (!crc_token) {
     return next();
   }
@@ -85,10 +84,26 @@ router.get('/account_activity', (req, res, next) => {
   res.json({ response_token: `sha256=${signature}` });
 });
 
-router.post('/account_activity', bodyParser.text({ type: '*/*' }), require('../controller/verifyTwitterRequest'), (req, res, next) => {
-  let body = JSON.parse(req.body);
-  console.log(req.body);
+const { verifyTwitterRequest } = require('../controller/verifyRequest');
+router.post('/account_activity', bodyParser.text({ type: '*/*' }), verifyTwitterRequest, (req, res, next) => {
   res.json({ message: "Success!" });
+  let body;
+  try {
+    body = JSON.parse(req.body);
+    if (!body) {
+      throw new Error('Body is empty');
+    }
+  } catch (e) {
+    errorHandler(e);
+    return;
+  }
+  if (body.favorite_events) {
+    Promise.all(
+      body.favorite_events.map(
+        webhook => processFav(id_str).catch(errorHandler)
+      )
+    );
+  }
 });
 
 module.exports = router;
