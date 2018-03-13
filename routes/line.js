@@ -27,7 +27,6 @@ router.post("/", verifyLineRequest, function (req, res, next) {
       processLINECallback(data).then(item => sendTextMessage(`任務成功完了。\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`)).catch(errorHandler);
 
     } else if (event.type === 'message') {
-      console.log(event);
       require('../controller/process-LINE-message')(event);
     }
 
