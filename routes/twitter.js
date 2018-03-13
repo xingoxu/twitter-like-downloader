@@ -9,6 +9,8 @@ const { processFav, deleteTweet, addFav, getTweet } = require('../controller/pro
 const { sendTextMessage } = require('../controller/LINE_Message');
 const errorHandler = e => sendTextMessage(e.stack || ((typeof e === 'string' ? e : JSON.stringify(e))).substring(0, 1999)).catch(line_err => console.error(line_err, e));
 
+
+// process like
 router.post("/like", function (req, res, next) {
   let link = req.body.link;
   if (req.body.Secret != process.env['ifttt_Secret'] || !link) {
@@ -18,13 +20,14 @@ router.post("/like", function (req, res, next) {
   let id_str = linkArray[linkArray.length - 1];
   if (id_str && id_str != '') {
     processFav(id_str).catch(errorHandler);
-    res.json({ title: "Success!" });
+    res.json({ message: "Success!" });
   } else {
     errorHandler(`No id_str in ${JSON.stringify(req.body)}`);
     return res.status(400).json({ message: 'id_str error occured.' });
   }
 });
 
+// process retweet
 router.post("/retweet", function (req, res, next) {
   let link = req.body.link;
   if (req.body.Secret != process.env['ifttt_Secret'] || !link) {
@@ -33,7 +36,7 @@ router.post("/retweet", function (req, res, next) {
   let linkArray = link.split('/');
   let id_str = linkArray[linkArray.length - 1];
   if (id_str && id_str != '') {
-    res.json({ title: "Success!" });
+    res.json({ message: "Success!" });
 
     getTweet(id_str).catch(e => Promise.reject({
       err: e,
@@ -67,5 +70,22 @@ router.post("/retweet", function (req, res, next) {
     return res.status(400).json({ message: 'id_str error occured.' });
   }
 });
+
+// process crc request
+const crypto = require('crypto');
+router.get('/account_activity', (req, res, next) => {
+  let crc_token = request.query.crc_token;
+  if (!crc_token) {
+    return next();
+  }
+  const signature = crypto.createHmac('sha256', process.env['Consumer_Secret'])
+    .update(crc_token).digest('base64');
+  res.json({ response_token: `sha256=${signature}` });
+});
+
+router.post('/account_activity', (req, res, next) => {
+  console.log(req.body);
+  res.json({ message: "Success!" });
+})
 
 module.exports = router;
