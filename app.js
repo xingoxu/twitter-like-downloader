@@ -19,16 +19,23 @@ app.get('env') === 'production' ? app.disable('x-powered-by') : false;
 app.get('env') !== 'production' ? (app.use(logger('dev'))) : false;
 
 app.use(cookieParser());
-app.use('/line', bodyParser.text({ type: '*/*' }), require('./routes/line'));
 
-app.use(bodyParser.json());
+app.use((req, res, next) => {
+  if (
+    (req.path == '/twitter/account_activity' && req.method == 'POST')
+    || (req.path == '/line')
+  ) {
+    next();
+  } else {
+    bodyParser.json()(req, res, next);
+  }
+});
 app.use(bodyParser.urlencoded({extended: false}));
 // app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', require('./routes/index'));
+app.use('/line', bodyParser.text({ type: '*/*' }), require('./routes/line'));
 app.use('/twitter', require('./routes/twitter'));
-// app.use('/github', require('./routes/github'));
-// app.use('/bangumi', require('./routes/bangumi'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

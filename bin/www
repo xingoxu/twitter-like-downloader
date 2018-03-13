@@ -6,14 +6,21 @@
 
 var app = require('../app');
 var debug = require('debug')('twitter-like-downloader');
-var http = require('https');
+if (process.env.NODE_ENV == 'production') {
+  var http = require('https');
+} else {
+  var http = require('http');
+}
 var fs = require('fs'),
   path = require('path');
-var credentials = {
-  key: fs.readFileSync(path.resolve(__dirname, '../cert/private.key')),
-  cert: fs.readFileSync(path.resolve(__dirname, '../cert/certificate.crt')),
-  ca: fs.readFileSync(path.resolve(__dirname, '../cert/ca_bundle.crt')),
-};
+
+if (process.env.NODE_ENV == 'production') {
+  var credentials = {
+    key: fs.readFileSync(path.resolve(__dirname, '../cert/private.key')),
+    cert: fs.readFileSync(path.resolve(__dirname, '../cert/certificate.crt')),
+    ca: fs.readFileSync(path.resolve(__dirname, '../cert/ca_bundle.crt')),
+  };
+}
 
 /**
  * Get port from environment and store in Express.
@@ -26,7 +33,7 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(credentials, app);
+var server = process.env.NODE_ENV == 'production' ? http.createServer(credentials, app) : http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.

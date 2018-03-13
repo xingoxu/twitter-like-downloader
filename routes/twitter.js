@@ -4,6 +4,7 @@
 
 var express = require("express");
 var router = express.Router();
+var bodyParser = require('body-parser');
 
 const { processFav, deleteTweet, addFav, getTweet } = require('../controller/processFav');
 const { sendTextMessage } = require('../controller/LINE_Message');
@@ -83,9 +84,10 @@ router.get('/account_activity', (req, res, next) => {
   res.json({ response_token: `sha256=${signature}` });
 });
 
-router.post('/account_activity', (req, res, next) => {
+router.post('/account_activity', bodyParser.text({ type: '*/*' }), require('../controller/verifyLineRequest'), (req, res, next) => {
+  let body = JSON.parse(req.body);
   console.log(req.body);
   res.json({ message: "Success!" });
-})
+});
 
 module.exports = router;
