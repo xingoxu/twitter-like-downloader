@@ -85,7 +85,7 @@ router.get('/account_activity', (req, res, next) => {
   res.json({ response_token: `sha256=${signature}` });
 });
 
-router.post('/account_activity', bodyParser.text({ type: '*/*' }), require('../controller/verifyLineRequest'), (req, res, next) => {
+router.post('/account_activity', bodyParser.text({ type: '*/*' }), require('../controller/verifyTwitterRequest'), (req, res, next) => {
   let body = JSON.parse(req.body);
   console.log(req.body);
   res.json({ message: "Success!" });
