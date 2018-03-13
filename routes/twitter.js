@@ -100,7 +100,7 @@ router.post('/account_activity', bodyParser.text({ type: '*/*' }), verifyTwitter
   if (body.favorite_events) {
     Promise.all(
       body.favorite_events.map(
-        webhook => processFav(id_str).catch(errorHandler)
+        webhook => processFav(webhook.favorited_status.id_str).catch(errorHandler)
       )
     );
   }

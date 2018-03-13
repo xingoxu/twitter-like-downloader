@@ -4,4 +4,3 @@ node_modules
 v8-compile-cache-0/
 utils/test_env.js
 download/
-cert/
