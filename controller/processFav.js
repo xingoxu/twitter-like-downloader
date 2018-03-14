@@ -194,7 +194,7 @@ async function processTwitterItem(item) {
         label: 'Download Privatter',
         data: qs.stringify({
           type: 'privatter',
-          item: getSimpleItem(item)
+          id_str: item.id_str
         })
       }, {
         label: 'Download Picture',
