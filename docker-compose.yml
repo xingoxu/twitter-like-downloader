@@ -8,8 +8,7 @@ services:
       Access_Token: 
       Access_Token_Secret: 
       privatter_Cookie: 
-      download_path: ../twitter-like-downloader/
-      retweet_text: 
+      download_path: ../pic-downloaded/
       LINE_ChannelSecret:
       LINE_AccessToken:
       LINE_UserId:
@@ -23,3 +22,4 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
+      - ../pic-downloaded:/pic-downloaded
