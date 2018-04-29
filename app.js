@@ -16,6 +16,7 @@ app.get('env') === 'production' ? app.disable('x-powered-by') : false;
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'ejs');
 app.get('env') !== 'production' ? (app.use(logger('dev'))) : false;
+process.env['Twitter_UserId'] = process.env['Access_Token'].split('-')[0];
 
 app.use(cookieParser());
 

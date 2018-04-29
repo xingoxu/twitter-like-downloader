@@ -8,7 +8,6 @@ services:
       Access_Token: 
       Access_Token_Secret: 
       privatter_Cookie: 
-      ifttt_Secret: 
       download_path: ../twitter-like-downloader/
       retweet_text: 
       LINE_ChannelSecret:

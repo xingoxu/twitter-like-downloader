@@ -10,68 +10,6 @@ const { processFav, deleteTweet, addFav, getTweet } = require('../controller/pro
 const { sendTextMessage } = require('../controller/LINE_Message');
 const errorHandler = require('../controller/errorHandler');
 
-
-// process like
-router.post("/like", function (req, res, next) {
-  let link = req.body.link;
-  if (req.body.Secret != process.env['ifttt_Secret'] || !link) {
-    return res.status(401).json({ message: 'Permission Denied!' });
-  }
-  let linkArray = link.split('/');
-  let id_str = linkArray[linkArray.length - 1];
-  if (id_str && id_str != '') {
-    processFav(id_str).catch(errorHandler);
-    res.json({ message: "Success!" });
-  } else {
-    errorHandler(`No id_str in ${JSON.stringify(req.body)}`);
-    return res.status(400).json({ message: 'id_str error occured.' });
-  }
-});
-
-// process retweet
-router.post("/retweet", function (req, res, next) {
-  let link = req.body.link;
-  if (req.body.Secret != process.env['ifttt_Secret'] || !link) {
-    return res.status(401).json({ message: 'Permission Denied!' });
-  }
-  let linkArray = link.split('/');
-  let id_str = linkArray[linkArray.length - 1];
-  if (id_str && id_str != '') {
-    res.json({ message: "Success!" });
-
-    getTweet(id_str).catch(e => Promise.reject({
-      err: e,
-      url: `https://twitter.com/i/status/${id_str}`
-    })).then(quoteTweet => ({
-      validate_text: quoteTweet.full_text,
-      validate_text_range: quoteTweet.display_text_range,
-      original_id_str: quoteTweet.id_str,
-      id_str: quoteTweet.quoted_status_id_str,
-      is_quote_status: quoteTweet.is_quote_status
-    })).then(body => {
-      if (!body.is_quote_status) {
-        return;
-      }
-      let validate_text = body.validate_text,
-        validate_text_range = body.validate_text_range;
-      if (!validate_text || !validate_text_range || validate_text_range.length != 2) {
-        console.error(body);
-        return;
-      }
-      if (validate_text.slice(...validate_text_range) == process.env['retweet_text']) {
-        let original_id_str = body.original_id_str;
-        return processFav(body.id_str).then(item => Promise.all([deleteTweet(original_id_str), addFav(body.id_str)]).catch(err => Promise.reject({
-          err,
-          url: `https://twitter.com/${item.user.screen_name}/status/${item.id_str}`
-        })));
-      }
-    }).catch(errorHandler);
-  } else {
-    errorHandler(`No id_str in ${JSON.stringify(req.body)}`);
-    return res.status(400).json({ message: 'id_str error occured.' });
-  }
-});
-
 // process crc request
 const crypto = require('crypto');
 router.get('/account_activity', (req, res, next) => {
@@ -84,6 +22,7 @@ router.get('/account_activity', (req, res, next) => {
   res.json({ response_token: `sha256=${signature}` });
 });
 
+// process account_activity webhook
 const { verifyTwitterRequest } = require('../controller/verifyRequest');
 router.post('/account_activity', bodyParser.text({ type: '*/*' }), verifyTwitterRequest, (req, res, next) => {
   res.json({ message: "Success!" });
@@ -97,10 +36,19 @@ router.post('/account_activity', bodyParser.text({ type: '*/*' }), verifyTwitter
     errorHandler(e);
     return;
   }
+
+  // process favourite event
   if (body.favorite_events) {
     Promise.all(
       body.favorite_events.map(
-        webhook => processFav(webhook.favorited_status.id_str).catch(errorHandler)
+        webhook => {
+          // People favourite my tweet
+          if (webhook.user.id_str != process.env['Twitter_UserId']) {
+            return Promise.resolve();
+          }
+
+          return processFav(webhook.favorited_status.id_str).catch(errorHandler);
+        }
       )
     );
   }
