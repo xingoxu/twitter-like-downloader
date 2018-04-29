@@ -13,14 +13,13 @@
     "body-parser": "^1.18.2",
     "cookie-parser": "^1.4.3",
     "debug": "^3.1.0",
-    "ejs": "^2.5.7",
-    "express": "^4.16.2",
+    "ejs": "^2.5.9",
+    "express": "^4.16.3",
     "jquery": "^3.3.1",
     "jsdom": "^9.12.0",
     "moment": "^2.21.0",
     "morgan": "^1.9.0",
     "qs": "^6.5.1",
-    "request": "^2.83.0",
-    "rss-parser": "^3.1.1"
+    "request": "^2.85.0"
   }
 }

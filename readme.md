@@ -13,7 +13,7 @@
 1. 需要开通 Account Activity API
 2. 推特、LINE 开发者中心注册应用
 3. 填入环境变量，`docker-compose up` 启动应用
-4. 使用 Account Activity API 注册 webhook
+4. 使用 Account Activity API 注册 webhook (`https://${host}/twitter/account_activity`)
 
 ## 注意
 Account Activity API 注册 webhook 链接需要 https 且 443 端口，请在宿主机上配置 https 并反代或者自己改写 `docker-compose` 文件部署。
