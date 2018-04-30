@@ -18,5 +18,3 @@
 ## Caution
 Use Account Activity API to register webhook need https and only support 443 port.
 Please config https and use reverse proxy or edit `docker-compose` file by yourself in your host server.
-
-The detail will be attached later.

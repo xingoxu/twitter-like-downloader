@@ -18,4 +18,4 @@
 ## 注意
 Account Activity API に登録の webhook は https と 443 ポートのみサポートします、ホスト機に https を配置してリバースプロキシしてください、または自分で`docker-compose`ファイルを書き換えてデプロイします。
 
-詳細説明後ほど公開します。
+Account Activity API の申請[参考](https://blog.xingoxu.com/ja/2018/04/twitter-account-activity-api/)

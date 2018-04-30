@@ -21,4 +21,4 @@
 ## 注意
 Account Activity API 注册 webhook 链接需要 https 且 443 端口，请在宿主机上配置 https 并反代或者自己改写 `docker-compose` 文件部署。
 
-详细使用说明之后附上
+Account Activity API 申请及问题 可以[查看](https://blog.xingoxu.com/2018/04/twitter-account-activity-api/)
