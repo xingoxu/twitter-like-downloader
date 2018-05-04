@@ -5,7 +5,7 @@
 var express = require("express");
 var router = express.Router();
 
-const { processFav, deleteTweet, addFav, getTweet, processLINECallback } = require('../controller/processFav');
+const { processFav, deleteTweet, getTweet, processLINECallback } = require('../controller/processFav');
 const { sendTextMessage, sendReplyTextMessage } = require('../controller/LINE_Message');
 const { verifyLineRequest } = require('../controller/verifyRequest');
 const qs = require('qs');

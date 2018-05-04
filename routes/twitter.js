@@ -6,7 +6,7 @@ var express = require("express");
 var router = express.Router();
 var bodyParser = require('body-parser');
 
-const { processFav, deleteTweet, addFav, getTweet } = require('../controller/processFav');
+const { processFav, deleteTweet, getTweet } = require('../controller/processFav');
 const { sendTextMessage } = require('../controller/LINE_Message');
 const errorHandler = require('../controller/errorHandler');
 
