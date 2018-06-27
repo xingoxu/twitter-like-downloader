@@ -36,7 +36,7 @@ function sendButtonMessage({ img, url, actions, text, title }) {
         to: process.env['LINE_UserId'],
         messages: [{
           'type': 'template',
-          'altText': 'Tweet has to be checked',
+          'altText': `Tweet has to be checked\n${url}`,
           'template': {
             'type': 'buttons',
             'thumbnailImageUrl': img || 'https://pbs.twimg.com/media/DYFYBjpVAAEdjnz.jpg:orig',
