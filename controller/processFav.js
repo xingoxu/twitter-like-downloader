@@ -1,6 +1,4 @@
 const httpClient = require('request');
-const fs = require('fs');
-const path = require('path');
 const { sendTextMessage, sendButtonMessage } = require('../controller/LINE_Message');
 const qs = require('qs');
 
@@ -223,10 +221,35 @@ async function processTwitterItem(item) {
 async function downloadMedia(item) {
   let promiseArray = [];
   item.extended_entities.media.forEach(pic => {
-    let fileArray = pic.media_url_https.split('/');
-    let fileName = fileArray[fileArray.length - 1];
-    let fileNameArray = fileName.split('.');
-    let promise = download(`${pic.media_url_https}:orig`, `${fileNameArray[0]}_${item.id_str}.${fileNameArray[1]}`, item.user.screen_name);
+    let promise;
+    if (pic.additional_media_info && pic.additional_media_info.embeddable === false) {
+      promise = Promise.reject(new Error('Media only available to twitter official client'));
+    } else if (pic.type == 'photo') {
+      // photo
+      let fileArray = pic.media_url_https.split('/');
+      let fileName = fileArray[fileArray.length - 1];
+      let fileNameArray = fileName.split('.');
+      promise = download(`${pic.media_url_https}:orig`, `${fileNameArray[0]}_${item.id_str}.${fileNameArray[1]}`, item.user.screen_name);
+    } else if (pic.type == 'animated_gif') {
+      // animated_gif
+      if (pic.video_info.variants.length > 1) {
+        sendTextMessage(`Animated Gif video more than 1.\n\nhttps://twitter.com/${item.user.screen_name}/status/${item.id_str}`);
+      }
+      let fileArray = pic.video_info.variants[0].url.split('/');
+      let fileName = fileArray[fileArray.length - 1];
+      let fileNameArray = fileName.split('.');
+      promise = download(pic.video_info.variants[0].url, `${fileNameArray[0]}_${item.id_str}.${fileNameArray[1]}`, item.user.screen_name);
+    } else if (pic.type == 'video') {
+      // video
+      let sortVariants = pic.video_info.variants.sort((videoA, videoB) => (videoA.bitrate || 0) < (videoB.bitrate || 0));
+      let downloadURL = sortVariants[0].url;
+      let fileArray = downloadURL.split('/');
+      let fileName = fileArray[fileArray.length - 1];
+      let fileNameArray = fileName.split('.');
+      promise = download(downloadURL, `${fileNameArray[0]}_${item.id_str}.${fileNameArray[1]}`, item.user.screen_name);
+    } else {
+      promise = Promise.reject(new Error(`Twitter Object media unknow type: ${pic.type}`));
+    }
     promiseArray.push(promise);
   });
   await Promise.all(promiseArray);
